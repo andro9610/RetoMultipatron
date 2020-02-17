@@ -15,9 +15,9 @@ public class IteradorOrdenes implements Iterator {
     }
 
     public boolean hasNext() {
-        index++;
         if(index < keyArray.length && keyArray[index] != null ){
             nextCandidate = coleccion.get(keyArray[index]);
+            index++;
             return true;
         }
         return false;
