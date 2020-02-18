@@ -1,6 +1,3 @@
-import java.util.*;
-import java.io.*;
-//mport java.io.*;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
@@ -195,7 +192,7 @@ public class OrderManager extends JFrame {
     );
 
     //frame.pack();
-    frame.setSize(500, 400);
+    frame.setSize(700, 400);
     frame.setVisible(true);
   }
 

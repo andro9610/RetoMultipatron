@@ -1,11 +1,11 @@
 import java.util.*;
 
 class OrderVisitor implements VisitorInterface {
-  private Vector orderObjList;
+  Map<Integer, Order> orderObjList;
   private double orderTotal;
 
   public OrderVisitor() {
-    orderObjList = new Vector();
+    orderObjList = new TreeMap<Integer, Order>();
   }
   public void visit(NonCaliforniaOrder inp_order) {
     orderTotal = orderTotal + inp_order.getOrderAmount();
@@ -23,6 +23,11 @@ class OrderVisitor implements VisitorInterface {
     orderTotal = orderTotal + inp_order.getOrderAmount() +
                  inp_order.getAdditionalFFT();
   }
+
+  public IteradorOrdenes getIteradorOrdenes(){
+    return new IteradorOrdenes(orderObjList);
+  }
+
   public double getOrderTotal() {
     return orderTotal;
   }
