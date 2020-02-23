@@ -15,7 +15,7 @@ public class ColombianOrder implements Order{
     public double getAdditionalFFT(){
         return additionalFFT;
     }
-    public void accept(OrderVisitorIncremental v) {
+    public void accept(OrderVisitorDecremental v) {
         v.visit(this);
     }
 }

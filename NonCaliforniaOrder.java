@@ -9,7 +9,7 @@ public class NonCaliforniaOrder implements Order {
     public double getOrderAmount() {
       return orderAmount;
     }
-    public void accept(OrderVisitorIncremental v) {
+    public void accept(OrderVisitorDecremental v) {
       v.visit(this);
     }
 }

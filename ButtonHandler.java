@@ -33,18 +33,17 @@ class ButtonHandler implements ActionListener {
         strSH = "0.0";
       }
 
-      dblOrderAmount =
-        new Double(strOrderAmount).doubleValue();
-      dblTax = new Double(strTax).doubleValue();
-      dblSH = new Double(strSH).doubleValue();
-      dblFFT = new Double(strFFT).doubleValue();
+      dblOrderAmount = Double.parseDouble(strOrderAmount);
+      dblTax = Double.parseDouble(strTax);
+      dblSH = Double.parseDouble(strSH);
+      dblFFT = Double.parseDouble(strFFT);
 
       //Create the order
       Order order = createOrder(orderType, dblOrderAmount,
                     dblTax, dblSH,dblFFT);
 
       //Get the Visitor
-      OrderVisitorIncremental visitor =
+      OrderVisitorDecremental visitor =
         objOrderManager.getOrderVisitor();
 
       // accept the visitor instance
@@ -54,8 +53,7 @@ class ButtonHandler implements ActionListener {
         " Order Created Successfully");
     }
     if (e.getActionCommand().equals(OrderManager.GET_TOTAL)) {
-      totalResult = new Double(
-        objOrderManager.getCollectionHandler().getOrderTotal()).toString();
+      totalResult = ((Double) objOrderManager.getCollectionHandler().getOrderTotal()).toString();
       totalResult = " Orders Total = " + totalResult;
       objOrderManager.setTotalValue(totalResult);
     }

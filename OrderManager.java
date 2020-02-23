@@ -22,16 +22,16 @@ public class OrderManager extends JFrame {
     private JLabel lblAdditionalTax, lblAdditionalSH, lblAdditionalFFT;
     private JLabel lblTotal, lblTotalValue;
 
-    private OrderVisitorIncremental objVisitorIncremental;
-    private OrderVisitorIncremental objVisitorDecremental;
+    private OrderVisitorDecremental objVisitorIncremental;
+    private OrderVisitorDecremental objVisitorDecremental;
     private CollectionHandler objCollectionHandler;
 
     public OrderManager() {
       super("Visitor Pattern - Example");
 
       objCollectionHandler = new CollectionHandler();
-      objVisitorIncremental = new OrderVisitorIncremental(objCollectionHandler);
-      objVisitorDecremental = new OrderVisitorIncremental(objCollectionHandler);
+      objVisitorIncremental = new OrderVisitorDecremental(objCollectionHandler);
+      objVisitorDecremental = new OrderVisitorDecremental(objCollectionHandler);
 
       cmbOrderType = new JComboBox();
       cmbOrderType.addItem(OrderManager.CA_ORDER);
@@ -202,7 +202,7 @@ public class OrderManager extends JFrame {
     public void setTotalValue(String msg) {
       lblTotalValue.setText(msg);
     }
-    public OrderVisitorIncremental getOrderVisitor() {
+    public OrderVisitorDecremental getOrderVisitor() {
       return objVisitorIncremental;
     }
     public CollectionHandler getCollectionHandler() {

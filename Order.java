@@ -1,3 +1,3 @@
 public interface Order {
-    public void accept(OrderVisitorIncremental v);
+    public void accept(OrderVisitorDecremental v);
 }

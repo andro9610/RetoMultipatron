@@ -15,7 +15,7 @@ public class OverseasOrder implements Order {
     public double getAdditionalSH() {
         return additionalSH;
     }
-    public void accept(OrderVisitorIncremental v) {
+    public void accept(OrderVisitorDecremental v) {
         v.visit(this);
     }
 }

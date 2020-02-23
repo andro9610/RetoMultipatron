@@ -1,8 +1,8 @@
-class OrderVisitorIncremental implements VisitorInterface {
+class OrderVisitorDecremental implements VisitorInterface {
 
     CollectionHandler objCollectionHandler;
 
-    public OrderVisitorIncremental(CollectionHandler objCollectionHandler) {
+    public OrderVisitorDecremental(CollectionHandler objCollectionHandler) {
         this.objCollectionHandler = objCollectionHandler;
     }
 
