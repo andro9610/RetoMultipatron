@@ -1,11 +1,24 @@
-import java.awt.*;
-import java.awt.event.*;
-import javax.swing.*;
-//import com.sun.java.swing.plaf.windows.*;
+import javax.swing.JFrame;
+
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.RowFilter;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableRowSorter;
 
 public class OrderManager extends JFrame {
     private static final long serialVersionUID = 1L;
-    public static final String newline = "\n";
+
+    /** Instrucciones de texto */
     public static final String GET_TOTAL = "Get Total";
     public static final String CREATE_ORDER = "Create Order";
     public static final String EXIT = "Exit";
@@ -14,216 +27,241 @@ public class OrderManager extends JFrame {
     public static final String OVERSEAS_ORDER = "Overseas Order";
     public static final String COLOMBIAN_ORDER = "Colombian Order";
 
+    /** Elementos de la interfaz */
+    JLabel lblTittle, lblOrderType, lblOrderAmount, lblSearchTooltip, lblAdditionalTax, lblAdditionalSH,
+            lblAdditionalFPT, lblTotalValue;
 
-    private JComboBox cmbOrderType;
-    private JTextField txtOrderAmount, txtAdditionalTax,
-    txtAdditionalSH, txtAdditionalFFT;//AdditionalFFT se refiere al impuesto de 4x1000 solo valido en colombia
-    private JLabel lblOrderType, lblOrderAmount;
-    private JLabel lblAdditionalTax, lblAdditionalSH, lblAdditionalFFT;
-    private JLabel lblTotal, lblTotalValue;
+    JComboBox<String> cmbOrderType;
 
+    JTextField txtOrderAmount, txtSearch, txtAdditionalTax, txtAdditionalSH, txtAdditionalFPT;
+
+    JButton getTotalButton, createOrderButton, exitButton;
+
+    /** Elementos Visitor */
     private OrderVisitorDecremental objVisitorIncremental;
     private OrderVisitorDecremental objVisitorDecremental;
     private CollectionHandler objCollectionHandler;
 
+    /** Elementos para el manejo visual de la tabla */
+    DefaultTableModel dtm;
+    JTable orderTable;
+    JScrollPane tableContainer;
+
     public OrderManager() {
-      super("Visitor Pattern - Example");
+        setSize(1380, 280);
+        setTitle("Reto multipatron");
+        setLocationRelativeTo(null);
+        setUndecorated(true);
+        setLayout(null);
 
-      objCollectionHandler = new CollectionHandler();
-      objVisitorIncremental = new OrderVisitorDecremental(objCollectionHandler);
-      objVisitorDecremental = new OrderVisitorDecremental(objCollectionHandler);
+        /** Elementos de tipo Visitor */
+        objCollectionHandler = new CollectionHandler();
+        objVisitorIncremental = new OrderVisitorDecremental(objCollectionHandler);
+        objVisitorDecremental = new OrderVisitorDecremental(objCollectionHandler);
+        /** Construccion de la interfaz grafica */
 
-      cmbOrderType = new JComboBox();
-      cmbOrderType.addItem(OrderManager.CA_ORDER);
-      cmbOrderType.addItem(OrderManager.NON_CA_ORDER);
-      cmbOrderType.addItem(OrderManager.OVERSEAS_ORDER);
-      cmbOrderType.addItem(OrderManager.COLOMBIAN_ORDER);
+        /** Items fijos */
+        lblTittle = new JLabel("Reto Multipatron");
 
-      //Create the text fields
-      txtOrderAmount = new JTextField(10);
-      txtAdditionalTax = new JTextField(10);
-      txtAdditionalSH = new JTextField(10);
-      txtAdditionalFFT = new JTextField(10);
+        lblOrderType = new JLabel("OrderType");
 
-      //Create the labels
-      lblOrderType = new JLabel("Order Type:");
-      lblOrderAmount = new JLabel("Order Amount:");
-      lblAdditionalTax =
-        new JLabel("Additional Tax(CA Orders Only):");
-      lblAdditionalSH =
-        new JLabel("Additional S & H(Overseas Orders Only):");
-      lblAdditionalFFT = 
-        new JLabel("Additional Colombian Tax (FFT)");
-      lblTotal = new JLabel("Result:");
-      lblTotalValue =
-        new JLabel("Click Create or GetTotal Button");
+        cmbOrderType = new JComboBox<String>();
+        cmbOrderType.addItem(OrderManager.CA_ORDER);
+        cmbOrderType.addItem(OrderManager.NON_CA_ORDER);
+        cmbOrderType.addItem(OrderManager.OVERSEAS_ORDER);
+        cmbOrderType.addItem(OrderManager.COLOMBIAN_ORDER);
 
-      //Create the open button
-      JButton getTotalButton =
-        new JButton(OrderManager.GET_TOTAL);
-      getTotalButton.setMnemonic(KeyEvent.VK_G);
-      JButton createOrderButton =
-        new JButton(OrderManager.CREATE_ORDER);
-      getTotalButton.setMnemonic(KeyEvent.VK_C);
-      JButton exitButton = new JButton(OrderManager.EXIT);
-      exitButton.setMnemonic(KeyEvent.VK_X);
-      ButtonHandler objButtonHandler = new ButtonHandler(this);
+        lblOrderAmount = new JLabel("Order Amount");
+        txtOrderAmount = new JTextField();
+        lblSearchTooltip = new JLabel("Search Order");
+        txtSearch = new JTextField();
 
+        /** Item especial: tabla de ordenes */
+        Object[][] data = new Object[][] { { "0", "Colombian Order", "500", "0", "0", "35", "no" },
+                { "1", "Non-CaliforniaOrder", "430", "0", "0", "25", "no" } };
+        Object[] columns = new Object[] { "ID", "Type", "Amount", "Tax", "S&H", "FFT", "Delete?" };
+        dtm = new DefaultTableModel(data, columns);
+        orderTable = new JTable(dtm);
+        tableContainer = new JScrollPane(orderTable);
+        /** Items variables */
+        lblAdditionalTax = new JLabel("Additional Tax (CA Orders Only)");
+        txtAdditionalTax = new JTextField();
+        lblAdditionalSH = new JLabel("Additional S&H (Overseas Orders Only)");
+        txtAdditionalSH = new JTextField();
+        lblAdditionalFPT = new JLabel("Additional FFT (Colombian Orders Only)");
+        txtAdditionalFPT = new JTextField();
+        lblTotalValue = new JLabel();
+        /** Botones */
+        getTotalButton = new JButton(OrderManager.GET_TOTAL);
+        createOrderButton = new JButton(OrderManager.CREATE_ORDER);
+        exitButton = new JButton(OrderManager.EXIT);
+        /** Fin de la construccion de la interfaz grafica */
 
-      getTotalButton.addActionListener(objButtonHandler);
-      createOrderButton.addActionListener(objButtonHandler);
-      exitButton.addActionListener(new ButtonHandler());
+        /** Posicionamiento de elementos */
+        lblTittle.setBounds(12, 12, 100, 50);
 
-      //For layout purposes, put the buttons in a separate panel
-      JPanel buttonPanel = new JPanel();
+        lblOrderType.setBounds(20, 40, 250, 50);
+        cmbOrderType.setBounds(260, 55, 150, 20);
 
-      JPanel panel = new JPanel();
-      GridBagLayout gridbag2 = new GridBagLayout();
-      panel.setLayout(gridbag2);
-      GridBagConstraints gbc2 = new GridBagConstraints();
-      panel.add(getTotalButton);
-      panel.add(createOrderButton);
-      panel.add(exitButton);
-      gbc2.anchor = GridBagConstraints.EAST;
-      gbc2.gridx = 0;
-      gbc2.gridy = 0;
-      gridbag2.setConstraints(createOrderButton, gbc2);
-      gbc2.gridx = 1;
-      gbc2.gridy = 0;
-      gridbag2.setConstraints(getTotalButton, gbc2);
-      gbc2.gridx = 2;
-      gbc2.gridy = 0;
-      gridbag2.setConstraints(exitButton, gbc2);
+        lblOrderAmount.setBounds(20, 70, 250, 50);
+        txtOrderAmount.setBounds(260, 82, 150, 25);
 
-      //****************************************************
-      GridBagLayout gridbag = new GridBagLayout();
-      buttonPanel.setLayout(gridbag);
-      GridBagConstraints gbc = new GridBagConstraints();
+        lblAdditionalTax.setBounds(20, 100, 250, 50);
+        txtAdditionalTax.setBounds(260, 112, 150, 25);
 
-      buttonPanel.add(lblOrderType);
-      buttonPanel.add(cmbOrderType);
-      buttonPanel.add(lblOrderAmount);
-      buttonPanel.add(txtOrderAmount);
-      buttonPanel.add(lblAdditionalTax);
-      buttonPanel.add(txtAdditionalTax);
-      buttonPanel.add(lblAdditionalSH);
-      buttonPanel.add(txtAdditionalSH);
-      buttonPanel.add(lblAdditionalFFT);
-      buttonPanel.add(txtAdditionalFFT);
-      buttonPanel.add(lblTotal);
-      buttonPanel.add(lblTotalValue);
+        lblAdditionalSH.setBounds(20, 100, 250, 50);
+        txtAdditionalSH.setBounds(260, 112, 150, 25);
 
-      gbc.insets.top = 5;
-      gbc.insets.bottom = 5;
-      gbc.insets.left = 5;
-      gbc.insets.right = 5;
+        lblAdditionalFPT.setBounds(20, 100, 250, 50);
+        txtAdditionalFPT.setBounds(260, 112, 150, 25);
 
-      gbc.anchor = GridBagConstraints.EAST;
-      gbc.gridx = 0;
-      gbc.gridy = 0;
-      gridbag.setConstraints(lblOrderType, gbc);
-      gbc.anchor = GridBagConstraints.WEST;
-      gbc.gridx = 1;
-      gbc.gridy = 0;
-      gridbag.setConstraints(cmbOrderType, gbc);
+        getTotalButton.setBounds(20, 152, 100, 20);
+        createOrderButton.setBounds(126, 152, 120, 20);
+        exitButton.setBounds(252, 152, 100, 20);
 
-      gbc.anchor = GridBagConstraints.EAST;
-      gbc.gridx = 0;
-      gbc.gridy = 1;
-      gridbag.setConstraints(lblOrderAmount, gbc);
-      gbc.anchor = GridBagConstraints.WEST;
-      gbc.gridx = 1;
-      gbc.gridy = 1;
-      gridbag.setConstraints(txtOrderAmount, gbc);
+        lblSearchTooltip.setBounds(20, 222, 250, 50);
+        txtSearch.setBounds(160, 236, 250, 25);
 
-      gbc.anchor = GridBagConstraints.EAST;
-      gbc.gridx = 0;
-      gbc.gridy = 2;
-      gridbag.setConstraints(lblAdditionalTax, gbc);
-      gbc.anchor = GridBagConstraints.WEST;
-      gbc.gridx = 1;
-      gbc.gridy = 2;
-      gridbag.setConstraints(txtAdditionalTax, gbc);
+        tableContainer.setBounds(450, 20, 900, 250);
+        lblTotalValue.setBounds(150, 182, 250, 50);
+        /** Fin del posicionamiento de elementos */
 
-      gbc.anchor = GridBagConstraints.EAST;
-      gbc.gridx = 0;
-      gbc.gridy = 3;
-      gridbag.setConstraints(lblAdditionalSH, gbc);
-      gbc.anchor = GridBagConstraints.WEST;
-      gbc.gridx = 1;
-      gbc.gridy = 3;
-      gridbag.setConstraints(txtAdditionalSH, gbc);
+        /** Configuracion de visibilidad */
+        lblAdditionalTax.setVisible(false);
+        txtAdditionalTax.setVisible(false);
 
-      gbc.anchor = GridBagConstraints.EAST;
-      gbc.gridx = 0;
-      gbc.gridy = 4;
-      gridbag.setConstraints(lblTotal, gbc);
-      gbc.anchor = GridBagConstraints.WEST;
-      gbc.gridx = 1;
-      gbc.gridy = 4;
-      gridbag.setConstraints(lblTotalValue, gbc);
+        lblAdditionalSH.setVisible(false);
+        txtAdditionalSH.setVisible(false);
 
-      gbc.insets.left = 2;
-      gbc.insets.right = 2;
-      gbc.insets.top = 40;
+        lblAdditionalFPT.setVisible(false);
+        txtAdditionalFPT.setVisible(false);
+        /** Fin de configuracion de visibilidad */
 
-      //****************************************************
+        /** Configuracion de comportamiento */
+        cmbOrderType.setSelectedItem(OrderManager.NON_CA_ORDER);
+        addFilterSearch();
+        addElementSwitch();
+        /** Fin de configuracion de comportamiento */
 
-      //Add the buttons and the log to the frame
-      Container contentPane = getContentPane();
+        /** Agregado de items */
 
-      contentPane.add(buttonPanel, BorderLayout.NORTH);
-      contentPane.add(panel, BorderLayout.CENTER);
-      try {
-        //UIManager.setLookAndFeel(new WindowsLookAndFeel());
-        SwingUtilities.updateComponentTreeUI(
-          OrderManager.this);
-      } catch (Exception ex) {
-        System.out.println(ex);
-      }
+        add(lblTittle);
+        add(lblOrderType);
+        add(cmbOrderType);
+        add(lblOrderAmount);
+        add(txtOrderAmount);
+        add(lblAdditionalTax);
+        add(txtAdditionalTax);
+        add(lblAdditionalSH);
+        add(txtAdditionalSH);
+        add(lblAdditionalFPT);
+        add(txtAdditionalFPT);
+        add(getTotalButton);
+        add(createOrderButton);
+        add(exitButton);
+        add(lblSearchTooltip);
+        add(txtSearch);
+        add(tableContainer);
+        add(lblTotalValue);
+        /** Fin del agregado de items */
 
-    }
-
-    public static void main(String[] args) {
-      JFrame frame = new OrderManager();
-
-      frame.addWindowListener(new WindowAdapter() {
-            public void windowClosing(WindowEvent e) {
-              System.exit(0);
-            }
-          }
-      );
-
-      //frame.pack();
-      frame.setSize(700, 400);
-      frame.setVisible(true);
     }
 
     public void setTotalValue(String msg) {
-      lblTotalValue.setText(msg);
+        lblTotalValue.setText(msg);
     }
+
     public OrderVisitorDecremental getOrderVisitor() {
-      return objVisitorIncremental;
+        return objVisitorIncremental;
     }
+
     public CollectionHandler getCollectionHandler() {
-      return objCollectionHandler;
+        return objCollectionHandler;
     }
+
     public String getOrderType() {
-      return (String) cmbOrderType.getSelectedItem();
+        return (String) cmbOrderType.getSelectedItem();
     }
+
     public String getOrderAmount() {
-      return txtOrderAmount.getText();
+        return txtOrderAmount.getText();
     }
+
     public String getTax() {
-      return txtAdditionalTax.getText();
+        return txtAdditionalTax.getText();
     }
+
     public String getSH() {
-      return txtAdditionalSH.getText();
+        return txtAdditionalSH.getText();
     }
 
-    public String getFFT() {
-      return txtAdditionalFFT.getText();
+    public String getFPT() {
+        return txtAdditionalFPT.getText();
     }
 
-} // End of class OrderManager
+    /** Metodo para manejar las busquedas en vivo */
+    private void addFilterSearch() {
+        txtSearch.addKeyListener(new KeyListener() {
 
+            @Override
+            public void keyTyped(KeyEvent e) {
+            }
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+                TableRowSorter<DefaultTableModel> tr = new TableRowSorter<>(dtm);
+                orderTable.setRowSorter(tr);
+                tr.setRowFilter(RowFilter.regexFilter(txtSearch.getText()));
+            }
+        });
+
+    }
+
+    private void addElementSwitch() {
+        cmbOrderType.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                switch ((String) cmbOrderType.getSelectedItem()) {
+                    case OrderManager.CA_ORDER:
+                        lblAdditionalTax.setVisible(true);
+                        txtAdditionalTax.setVisible(true);
+                        lblAdditionalSH.setVisible(false);
+                        txtAdditionalSH.setVisible(false);
+                        lblAdditionalFPT.setVisible(false);
+                        txtAdditionalFPT.setVisible(false);
+                        break;
+                    case OrderManager.NON_CA_ORDER:
+                        lblAdditionalTax.setVisible(false);
+                        txtAdditionalTax.setVisible(false);
+                        lblAdditionalSH.setVisible(false);
+                        txtAdditionalSH.setVisible(false);
+                        lblAdditionalFPT.setVisible(false);
+                        txtAdditionalFPT.setVisible(false);
+                        break;
+                    case OrderManager.OVERSEAS_ORDER:
+                        lblAdditionalTax.setVisible(false);
+                        txtAdditionalTax.setVisible(false);
+                        lblAdditionalSH.setVisible(true);
+                        txtAdditionalSH.setVisible(true);
+                        lblAdditionalFPT.setVisible(false);
+                        txtAdditionalFPT.setVisible(false);
+                        break;
+                    case OrderManager.COLOMBIAN_ORDER:
+                        lblAdditionalTax.setVisible(false);
+                        txtAdditionalTax.setVisible(false);
+                        lblAdditionalSH.setVisible(false);
+                        txtAdditionalSH.setVisible(false);
+                        lblAdditionalFPT.setVisible(true);
+                        txtAdditionalFPT.setVisible(true);
+                        break;
+                }
+            }
+            
+        });
+    }
+
+}
