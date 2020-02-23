@@ -16,7 +16,7 @@ class ButtonHandler implements ActionListener {
         objOrderManager.getOrderAmount();
       String strTax = objOrderManager.getTax();
       String strSH = objOrderManager.getSH();
-      String strFFT = objOrderManager.getFFT();
+      String strFFT = objOrderManager.getFPT();
 
       double dblOrderAmount = 0.0;
       double dblTax = 0.0;
