@@ -38,7 +38,7 @@ public class OrderManager extends JFrame {
     JButton getTotalButton, createOrderButton, exitButton;
 
     /** Elementos Visitor */
-    private OrderVisitorDecremental objVisitorIncremental;
+    private OrderVisitorIncremental objVisitorIncremental;
     private OrderVisitorDecremental objVisitorDecremental;
     private CollectionHandler objCollectionHandler;
 
@@ -141,6 +141,7 @@ public class OrderManager extends JFrame {
         cmbOrderType.setSelectedItem(OrderManager.NON_CA_ORDER);
         addFilterSearch();
         addElementSwitch();
+        addButtonListeners();
         /** Fin de configuracion de comportamiento */
 
         /** Agregado de items */
@@ -264,4 +265,15 @@ public class OrderManager extends JFrame {
         });
     }
 
+    private void addButtonListeners() {
+        ButtonHandler buttonAction = new ButtonHandler();
+
+        getTotalButton.addActionListener(buttonAction);
+        createOrderButton.addActionListener(buttonAction);
+        exitButton.addActionListener(buttonAction);
+
+        getTotalButton.setActionCommand(OrderManager.GET_TOTAL);
+        createOrderButton.setActionCommand(OrderManager.CREATE_ORDER);
+        exitButton.setActionCommand(OrderManager.EXIT);
+    }
 }
