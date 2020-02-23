@@ -4,313 +4,226 @@ import javax.swing.*;
 //import com.sun.java.swing.plaf.windows.*;
 
 public class OrderManager extends JFrame {
-  private static final long serialVersionUID = 1L;
-  public static final String newline = "\n";
-  public static final String GET_TOTAL = "Get Total";
-  public static final String CREATE_ORDER = "Create Order";
-  public static final String EXIT = "Exit";
-  public static final String CA_ORDER = "California Order";
-  public static final String NON_CA_ORDER = "Non-California Order";
-  public static final String OVERSEAS_ORDER = "Overseas Order";
-  public static final String COLOMBIAN_ORDER = "Colombian Order";
+    private static final long serialVersionUID = 1L;
+    public static final String newline = "\n";
+    public static final String GET_TOTAL = "Get Total";
+    public static final String CREATE_ORDER = "Create Order";
+    public static final String EXIT = "Exit";
+    public static final String CA_ORDER = "California Order";
+    public static final String NON_CA_ORDER = "Non-California Order";
+    public static final String OVERSEAS_ORDER = "Overseas Order";
+    public static final String COLOMBIAN_ORDER = "Colombian Order";
 
 
-  private JComboBox cmbOrderType;
-  private JTextField txtOrderAmount, txtAdditionalTax,
-  txtAdditionalSH, txtAdditionalFFT;//AdditionalFFT se refiere al impuesto de 4x1000 solo valido en colombia
-  private JLabel lblOrderType, lblOrderAmount;
-  private JLabel lblAdditionalTax, lblAdditionalSH, lblAdditionalFFT;
-  private JLabel lblTotal, lblTotalValue;
+    private JComboBox cmbOrderType;
+    private JTextField txtOrderAmount, txtAdditionalTax,
+    txtAdditionalSH, txtAdditionalFFT;//AdditionalFFT se refiere al impuesto de 4x1000 solo valido en colombia
+    private JLabel lblOrderType, lblOrderAmount;
+    private JLabel lblAdditionalTax, lblAdditionalSH, lblAdditionalFFT;
+    private JLabel lblTotal, lblTotalValue;
 
-  private OrderVisitor objVisitor;
+    private OrderVisitorDecremental objVisitorIncremental;
+    private OrderVisitorDecremental objVisitorDecremental;
+    private CollectionHandler objCollectionHandler;
 
-  public OrderManager() {
-    super("Visitor Pattern - Example");
+    public OrderManager() {
+      super("Visitor Pattern - Example");
 
-    //Create the visitor instance
-    objVisitor = new OrderVisitor();
+      objCollectionHandler = new CollectionHandler();
+      objVisitorIncremental = new OrderVisitorDecremental(objCollectionHandler);
+      objVisitorDecremental = new OrderVisitorDecremental(objCollectionHandler);
 
-    cmbOrderType = new JComboBox();
-    cmbOrderType.addItem(OrderManager.CA_ORDER);
-    cmbOrderType.addItem(OrderManager.NON_CA_ORDER);
-    cmbOrderType.addItem(OrderManager.OVERSEAS_ORDER);
-    cmbOrderType.addItem(OrderManager.COLOMBIAN_ORDER);
+      cmbOrderType = new JComboBox();
+      cmbOrderType.addItem(OrderManager.CA_ORDER);
+      cmbOrderType.addItem(OrderManager.NON_CA_ORDER);
+      cmbOrderType.addItem(OrderManager.OVERSEAS_ORDER);
+      cmbOrderType.addItem(OrderManager.COLOMBIAN_ORDER);
 
-    //Create the text fields
-    txtOrderAmount = new JTextField(10);
-    txtAdditionalTax = new JTextField(10);
-    txtAdditionalSH = new JTextField(10);
-    txtAdditionalFFT = new JTextField(10);
+      //Create the text fields
+      txtOrderAmount = new JTextField(10);
+      txtAdditionalTax = new JTextField(10);
+      txtAdditionalSH = new JTextField(10);
+      txtAdditionalFFT = new JTextField(10);
 
-    //Create the labels
-    lblOrderType = new JLabel("Order Type:");
-    lblOrderAmount = new JLabel("Order Amount:");
-    lblAdditionalTax =
-      new JLabel("Additional Tax(CA Orders Only):");
-    lblAdditionalSH =
-      new JLabel("Additional S & H(Overseas Orders Only):");
-    lblAdditionalFFT = 
-      new JLabel("Additional Colombian Tax (FFT)");
-    lblTotal = new JLabel("Result:");
-    lblTotalValue =
-      new JLabel("Click Create or GetTotal Button");
+      //Create the labels
+      lblOrderType = new JLabel("Order Type:");
+      lblOrderAmount = new JLabel("Order Amount:");
+      lblAdditionalTax =
+        new JLabel("Additional Tax(CA Orders Only):");
+      lblAdditionalSH =
+        new JLabel("Additional S & H(Overseas Orders Only):");
+      lblAdditionalFFT = 
+        new JLabel("Additional Colombian Tax (FFT)");
+      lblTotal = new JLabel("Result:");
+      lblTotalValue =
+        new JLabel("Click Create or GetTotal Button");
 
-    //Create the open button
-    JButton getTotalButton =
-      new JButton(OrderManager.GET_TOTAL);
-    getTotalButton.setMnemonic(KeyEvent.VK_G);
-    JButton createOrderButton =
-      new JButton(OrderManager.CREATE_ORDER);
-    getTotalButton.setMnemonic(KeyEvent.VK_C);
-    JButton exitButton = new JButton(OrderManager.EXIT);
-    exitButton.setMnemonic(KeyEvent.VK_X);
-    ButtonHandler objButtonHandler = new ButtonHandler(this);
+      //Create the open button
+      JButton getTotalButton =
+        new JButton(OrderManager.GET_TOTAL);
+      getTotalButton.setMnemonic(KeyEvent.VK_G);
+      JButton createOrderButton =
+        new JButton(OrderManager.CREATE_ORDER);
+      getTotalButton.setMnemonic(KeyEvent.VK_C);
+      JButton exitButton = new JButton(OrderManager.EXIT);
+      exitButton.setMnemonic(KeyEvent.VK_X);
+      ButtonHandler objButtonHandler = new ButtonHandler(this);
 
 
-    getTotalButton.addActionListener(objButtonHandler);
-    createOrderButton.addActionListener(objButtonHandler);
-    exitButton.addActionListener(new ButtonHandler());
+      getTotalButton.addActionListener(objButtonHandler);
+      createOrderButton.addActionListener(objButtonHandler);
+      exitButton.addActionListener(new ButtonHandler());
 
-    //For layout purposes, put the buttons in a separate panel
-    JPanel buttonPanel = new JPanel();
+      //For layout purposes, put the buttons in a separate panel
+      JPanel buttonPanel = new JPanel();
 
-    JPanel panel = new JPanel();
-    GridBagLayout gridbag2 = new GridBagLayout();
-    panel.setLayout(gridbag2);
-    GridBagConstraints gbc2 = new GridBagConstraints();
-    panel.add(getTotalButton);
-    panel.add(createOrderButton);
-    panel.add(exitButton);
-    gbc2.anchor = GridBagConstraints.EAST;
-    gbc2.gridx = 0;
-    gbc2.gridy = 0;
-    gridbag2.setConstraints(createOrderButton, gbc2);
-    gbc2.gridx = 1;
-    gbc2.gridy = 0;
-    gridbag2.setConstraints(getTotalButton, gbc2);
-    gbc2.gridx = 2;
-    gbc2.gridy = 0;
-    gridbag2.setConstraints(exitButton, gbc2);
+      JPanel panel = new JPanel();
+      GridBagLayout gridbag2 = new GridBagLayout();
+      panel.setLayout(gridbag2);
+      GridBagConstraints gbc2 = new GridBagConstraints();
+      panel.add(getTotalButton);
+      panel.add(createOrderButton);
+      panel.add(exitButton);
+      gbc2.anchor = GridBagConstraints.EAST;
+      gbc2.gridx = 0;
+      gbc2.gridy = 0;
+      gridbag2.setConstraints(createOrderButton, gbc2);
+      gbc2.gridx = 1;
+      gbc2.gridy = 0;
+      gridbag2.setConstraints(getTotalButton, gbc2);
+      gbc2.gridx = 2;
+      gbc2.gridy = 0;
+      gridbag2.setConstraints(exitButton, gbc2);
 
-    //****************************************************
-    GridBagLayout gridbag = new GridBagLayout();
-    buttonPanel.setLayout(gridbag);
-    GridBagConstraints gbc = new GridBagConstraints();
+      //****************************************************
+      GridBagLayout gridbag = new GridBagLayout();
+      buttonPanel.setLayout(gridbag);
+      GridBagConstraints gbc = new GridBagConstraints();
 
-    buttonPanel.add(lblOrderType);
-    buttonPanel.add(cmbOrderType);
-    buttonPanel.add(lblOrderAmount);
-    buttonPanel.add(txtOrderAmount);
-    buttonPanel.add(lblAdditionalTax);
-    buttonPanel.add(txtAdditionalTax);
-    buttonPanel.add(lblAdditionalSH);
-    buttonPanel.add(txtAdditionalSH);
-    buttonPanel.add(lblAdditionalFFT);
-    buttonPanel.add(txtAdditionalFFT);
-    buttonPanel.add(lblTotal);
-    buttonPanel.add(lblTotalValue);
+      buttonPanel.add(lblOrderType);
+      buttonPanel.add(cmbOrderType);
+      buttonPanel.add(lblOrderAmount);
+      buttonPanel.add(txtOrderAmount);
+      buttonPanel.add(lblAdditionalTax);
+      buttonPanel.add(txtAdditionalTax);
+      buttonPanel.add(lblAdditionalSH);
+      buttonPanel.add(txtAdditionalSH);
+      buttonPanel.add(lblAdditionalFFT);
+      buttonPanel.add(txtAdditionalFFT);
+      buttonPanel.add(lblTotal);
+      buttonPanel.add(lblTotalValue);
 
-    gbc.insets.top = 5;
-    gbc.insets.bottom = 5;
-    gbc.insets.left = 5;
-    gbc.insets.right = 5;
+      gbc.insets.top = 5;
+      gbc.insets.bottom = 5;
+      gbc.insets.left = 5;
+      gbc.insets.right = 5;
 
-    gbc.anchor = GridBagConstraints.EAST;
-    gbc.gridx = 0;
-    gbc.gridy = 0;
-    gridbag.setConstraints(lblOrderType, gbc);
-    gbc.anchor = GridBagConstraints.WEST;
-    gbc.gridx = 1;
-    gbc.gridy = 0;
-    gridbag.setConstraints(cmbOrderType, gbc);
+      gbc.anchor = GridBagConstraints.EAST;
+      gbc.gridx = 0;
+      gbc.gridy = 0;
+      gridbag.setConstraints(lblOrderType, gbc);
+      gbc.anchor = GridBagConstraints.WEST;
+      gbc.gridx = 1;
+      gbc.gridy = 0;
+      gridbag.setConstraints(cmbOrderType, gbc);
 
-    gbc.anchor = GridBagConstraints.EAST;
-    gbc.gridx = 0;
-    gbc.gridy = 1;
-    gridbag.setConstraints(lblOrderAmount, gbc);
-    gbc.anchor = GridBagConstraints.WEST;
-    gbc.gridx = 1;
-    gbc.gridy = 1;
-    gridbag.setConstraints(txtOrderAmount, gbc);
+      gbc.anchor = GridBagConstraints.EAST;
+      gbc.gridx = 0;
+      gbc.gridy = 1;
+      gridbag.setConstraints(lblOrderAmount, gbc);
+      gbc.anchor = GridBagConstraints.WEST;
+      gbc.gridx = 1;
+      gbc.gridy = 1;
+      gridbag.setConstraints(txtOrderAmount, gbc);
 
-    gbc.anchor = GridBagConstraints.EAST;
-    gbc.gridx = 0;
-    gbc.gridy = 2;
-    gridbag.setConstraints(lblAdditionalTax, gbc);
-    gbc.anchor = GridBagConstraints.WEST;
-    gbc.gridx = 1;
-    gbc.gridy = 2;
-    gridbag.setConstraints(txtAdditionalTax, gbc);
+      gbc.anchor = GridBagConstraints.EAST;
+      gbc.gridx = 0;
+      gbc.gridy = 2;
+      gridbag.setConstraints(lblAdditionalTax, gbc);
+      gbc.anchor = GridBagConstraints.WEST;
+      gbc.gridx = 1;
+      gbc.gridy = 2;
+      gridbag.setConstraints(txtAdditionalTax, gbc);
 
-    gbc.anchor = GridBagConstraints.EAST;
-    gbc.gridx = 0;
-    gbc.gridy = 3;
-    gridbag.setConstraints(lblAdditionalSH, gbc);
-    gbc.anchor = GridBagConstraints.WEST;
-    gbc.gridx = 1;
-    gbc.gridy = 3;
-    gridbag.setConstraints(txtAdditionalSH, gbc);
+      gbc.anchor = GridBagConstraints.EAST;
+      gbc.gridx = 0;
+      gbc.gridy = 3;
+      gridbag.setConstraints(lblAdditionalSH, gbc);
+      gbc.anchor = GridBagConstraints.WEST;
+      gbc.gridx = 1;
+      gbc.gridy = 3;
+      gridbag.setConstraints(txtAdditionalSH, gbc);
 
-    gbc.anchor = GridBagConstraints.EAST;
-    gbc.gridx = 0;
-    gbc.gridy = 4;
-    gridbag.setConstraints(lblTotal, gbc);
-    gbc.anchor = GridBagConstraints.WEST;
-    gbc.gridx = 1;
-    gbc.gridy = 4;
-    gridbag.setConstraints(lblTotalValue, gbc);
+      gbc.anchor = GridBagConstraints.EAST;
+      gbc.gridx = 0;
+      gbc.gridy = 4;
+      gridbag.setConstraints(lblTotal, gbc);
+      gbc.anchor = GridBagConstraints.WEST;
+      gbc.gridx = 1;
+      gbc.gridy = 4;
+      gridbag.setConstraints(lblTotalValue, gbc);
 
-    gbc.insets.left = 2;
-    gbc.insets.right = 2;
-    gbc.insets.top = 40;
+      gbc.insets.left = 2;
+      gbc.insets.right = 2;
+      gbc.insets.top = 40;
 
-    //****************************************************
+      //****************************************************
 
-    //Add the buttons and the log to the frame
-    Container contentPane = getContentPane();
+      //Add the buttons and the log to the frame
+      Container contentPane = getContentPane();
 
-    contentPane.add(buttonPanel, BorderLayout.NORTH);
-    contentPane.add(panel, BorderLayout.CENTER);
-    try {
-      //UIManager.setLookAndFeel(new WindowsLookAndFeel());
-      SwingUtilities.updateComponentTreeUI(
-        OrderManager.this);
-    } catch (Exception ex) {
-      System.out.println(ex);
+      contentPane.add(buttonPanel, BorderLayout.NORTH);
+      contentPane.add(panel, BorderLayout.CENTER);
+      try {
+        //UIManager.setLookAndFeel(new WindowsLookAndFeel());
+        SwingUtilities.updateComponentTreeUI(
+          OrderManager.this);
+      } catch (Exception ex) {
+        System.out.println(ex);
+      }
+
     }
 
-  }
+    public static void main(String[] args) {
+      JFrame frame = new OrderManager();
 
-  public static void main(String[] args) {
-    JFrame frame = new OrderManager();
-
-    frame.addWindowListener(new WindowAdapter() {
-          public void windowClosing(WindowEvent e) {
-            System.exit(0);
+      frame.addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent e) {
+              System.exit(0);
+            }
           }
-        }
-    );
+      );
 
-    //frame.pack();
-    frame.setSize(700, 400);
-    frame.setVisible(true);
-  }
+      //frame.pack();
+      frame.setSize(700, 400);
+      frame.setVisible(true);
+    }
 
-  public void setTotalValue(String msg) {
-    lblTotalValue.setText(msg);
-  }
-  public OrderVisitor getOrderVisitor() {
-    return objVisitor;
-  }
-  public String getOrderType() {
-    return (String) cmbOrderType.getSelectedItem();
-  }
-  public String getOrderAmount() {
-    return txtOrderAmount.getText();
-  }
-  public String getTax() {
-    return txtAdditionalTax.getText();
-  }
-  public String getSH() {
-    return txtAdditionalSH.getText();
-  }
+    public void setTotalValue(String msg) {
+      lblTotalValue.setText(msg);
+    }
+    public OrderVisitorDecremental getOrderVisitor() {
+      return objVisitorIncremental;
+    }
+    public CollectionHandler getCollectionHandler() {
+      return objCollectionHandler;
+    }
+    public String getOrderType() {
+      return (String) cmbOrderType.getSelectedItem();
+    }
+    public String getOrderAmount() {
+      return txtOrderAmount.getText();
+    }
+    public String getTax() {
+      return txtAdditionalTax.getText();
+    }
+    public String getSH() {
+      return txtAdditionalSH.getText();
+    }
 
-  public String getFFT() {
-    return txtAdditionalFFT.getText();
-  }
+    public String getFFT() {
+      return txtAdditionalFFT.getText();
+    }
 
 } // End of class OrderManager
-
-class ButtonHandler implements ActionListener {
-  OrderManager objOrderManager;
-  public void actionPerformed(ActionEvent e) {
-    String totalResult = null;
-
-    if (e.getActionCommand().equals(OrderManager.EXIT)) {
-      System.exit(1);
-    }
-    if (e.getActionCommand().equals(OrderManager.CREATE_ORDER)
-        ) {
-      //get input values
-      String orderType = objOrderManager.getOrderType();
-      String strOrderAmount =
-        objOrderManager.getOrderAmount();
-      String strTax = objOrderManager.getTax();
-      String strSH = objOrderManager.getSH();
-      String strFFT = objOrderManager.getFFT();
-
-      double dblOrderAmount = 0.0;
-      double dblTax = 0.0;
-      double dblSH = 0.0;
-      double dblFFT = 0.0;
-
-      if (strOrderAmount.trim().length() == 0) {
-        strOrderAmount = "0.0";
-      }
-      if (strTax.trim().length() == 0) {
-        strTax = "0.0";
-      }
-      if (strSH.trim().length() == 0) {
-        strSH = "0.0";
-      }
-
-      dblOrderAmount =
-        new Double(strOrderAmount).doubleValue();
-      dblTax = new Double(strTax).doubleValue();
-      dblSH = new Double(strSH).doubleValue();
-      dblFFT = new Double(strFFT).doubleValue();
-
-      //Create the order
-      Order order = createOrder(orderType, dblOrderAmount,
-                    dblTax, dblSH,dblFFT);
-
-      //Get the Visitor
-      OrderVisitor visitor =
-        objOrderManager.getOrderVisitor();
-
-      // accept the visitor instance
-      order.accept(visitor);
-
-      objOrderManager.setTotalValue(
-        " Order Created Successfully");
-    }
-
-    if (e.getActionCommand().equals(OrderManager.GET_TOTAL)) {
-      //Get the Visitor
-      OrderVisitor visitor =
-        objOrderManager.getOrderVisitor();
-      totalResult = new Double(
-                      visitor.getOrderTotal()).toString();
-      totalResult = " Orders Total = " + totalResult;
-      objOrderManager.setTotalValue(totalResult);
-    }
-  }
-
-  public Order createOrder(String orderType,
-      double orderAmount, double tax, double SH, double FFT) {
-    if (orderType.equalsIgnoreCase(OrderManager.CA_ORDER)) {
-      return new CaliforniaOrder(orderAmount, tax);
-    }
-    if (orderType.equalsIgnoreCase(
-      OrderManager.NON_CA_ORDER)) {
-      return new NonCaliforniaOrder(orderAmount);
-    }
-    if (orderType.equalsIgnoreCase(
-      OrderManager.OVERSEAS_ORDER)) {
-      return new OverseasOrder(orderAmount, SH);
-    }
-    if (orderType.equalsIgnoreCase(
-      OrderManager.COLOMBIAN_ORDER)){
-        return new ColombianOrder(orderAmount,FFT);
-      }
-    return null;
-  }
-
-  public ButtonHandler() {
-  }
-  public ButtonHandler(OrderManager inObjOrderManager) {
-    objOrderManager = inObjOrderManager;
-  }
-
-} // End of class ButtonHandler
 

@@ -1,15 +1,15 @@
 public class NonCaliforniaOrder implements Order {
-  private double orderAmount;
+    private double orderAmount;
 
-  public NonCaliforniaOrder() {
-  }
-  public NonCaliforniaOrder(double inp_orderAmount) {
-    orderAmount = inp_orderAmount;
-  }
-  public double getOrderAmount() {
-    return orderAmount;
-  }
-  public void accept(OrderVisitor v) {
-    v.visit(this);
-  }
+    public NonCaliforniaOrder() {
+    }
+    public NonCaliforniaOrder(double inp_orderAmount) {
+      orderAmount = inp_orderAmount;
+    }
+    public double getOrderAmount() {
+      return orderAmount;
+    }
+    public void accept(OrderVisitorDecremental v) {
+      v.visit(this);
+    }
 }
