@@ -33,7 +33,6 @@ public class OrderManager extends JFrame {
     public static final String MODIFY_ROW = "Modify";
     public static final String DELETE_ROW = "Delete";
     private ButtonHandler buttonAction;
-    private JTableButtonHandler innerActions;
 
     /** Elementos de la interfaz */
     private JLabel lblTittle, lblOrderType, lblOrderAmount, lblSearchTooltip, lblAdditionalTax, lblAdditionalSH,
@@ -43,7 +42,7 @@ public class OrderManager extends JFrame {
 
     private JTextField txtOrderAmount, txtSearch, txtAdditionalTax, txtAdditionalSH, txtAdditionalFPT, txtCode;
 
-    private JButton getTotalButton, createOrderButton, exitButton, deleteButton, modifyButton, viewButton;
+    private JButton getTotalButton, createOrderButton, exitButton;
 
     /** Elementos Visitor */
     private VisitorInterface objVisitorIncremental;
@@ -57,7 +56,6 @@ public class OrderManager extends JFrame {
 
     public OrderManager() {
         buttonAction = new ButtonHandler(this);
-        innerActions = new JTableButtonHandler(this);
         setSize(1380, 320);
         setTitle("Reto multipatron");
         setLocationRelativeTo(null);
@@ -87,13 +85,6 @@ public class OrderManager extends JFrame {
         txtOrderAmount = new JTextField();
         lblSearchTooltip = new JLabel("Search Order");
         txtSearch = new JTextField();
-
-        viewButton = new JButton(OrderManager.VIEW_ROW);
-        viewButton.addMouseListener(innerActions);
-        modifyButton = new JButton(OrderManager.MODIFY_ROW);
-        modifyButton.addMouseListener(innerActions);
-        deleteButton = new JButton(OrderManager.DELETE_ROW);    
-        deleteButton.addMouseListener(innerActions);
 
         /** Item especial: tabla de ordenes */
         Object[] columns = new Object[] { "ID", "Type", "Data", "modify", "Delete" };
@@ -329,9 +320,9 @@ public class OrderManager extends JFrame {
         JButton btn1 = new JButton(OrderManager.VIEW_ROW);
         JButton btn2 = new JButton(OrderManager.MODIFY_ROW);
         JButton btn3 = new JButton(OrderManager.DELETE_ROW);
-        btn1.addMouseListener(innerActions);
-        btn2.addMouseListener(innerActions);
-        btn3.addMouseListener(innerActions);
+        btn1.addMouseListener(buttonAction);
+        btn2.addMouseListener(buttonAction);
+        btn3.addMouseListener(buttonAction);
         Object[] row = {obj[0], obj[1], btn1, btn2, btn3};
         dtm.addRow(row);
         return true;

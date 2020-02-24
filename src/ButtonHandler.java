@@ -1,8 +1,9 @@
 package src;
 
 import java.awt.event.*;
+import javax.swing.AbstractButton;
 
-class ButtonHandler implements ActionListener {
+class ButtonHandler implements ActionListener, MouseListener {
 
   private OrderManager objOrderManager;
   private OrdersFactory factoriaOrdenes;
@@ -101,6 +102,48 @@ class ButtonHandler implements ActionListener {
   public ButtonHandler(OrderManager inObjOrderManager) {
     objOrderManager = inObjOrderManager;
     factoriaOrdenes = new OrdersFactory();
+  }
+
+  @Override
+  public void mouseClicked(MouseEvent e) {
+    // TODO Auto-generated method stub
+
+  }
+
+  @Override
+  public void mousePressed(MouseEvent e) {
+    // TODO Auto-generated method stub
+    switch (( (AbstractButton) e.getSource()).getActionCommand()) {
+      case OrderManager.VIEW_ROW:
+          System.out.println("View in button");
+          break;
+      case OrderManager.MODIFY_ROW:
+          objOrderManager.modify();
+          break;
+      case OrderManager.DELETE_ROW:
+          objOrderManager.removeRow();
+          break;
+      default:
+          break;
+  }
+  }
+
+  @Override
+  public void mouseReleased(MouseEvent e) {
+    // TODO Auto-generated method stub
+
+  }
+
+  @Override
+  public void mouseEntered(MouseEvent e) {
+    // TODO Auto-generated method stub
+
+  }
+
+  @Override
+  public void mouseExited(MouseEvent e) {
+    // TODO Auto-generated method stub
+
   }
 
 }
