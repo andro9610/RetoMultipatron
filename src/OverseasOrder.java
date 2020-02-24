@@ -1,3 +1,5 @@
+package src;
+
 public class OverseasOrder implements Order {
     private double orderAmount;
     private double additionalSH;
@@ -15,7 +17,7 @@ public class OverseasOrder implements Order {
     public double getAdditionalSH() {
         return additionalSH;
     }
-    public void accept(OrderVisitorDecremental v) {
+    public void accept(VisitorInterface v) {
         v.visit(this);
     }
 }

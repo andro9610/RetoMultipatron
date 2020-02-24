@@ -1,3 +1,5 @@
+package src;
+
 public class NonCaliforniaOrder implements Order {
     private double orderAmount;
 
@@ -9,7 +11,7 @@ public class NonCaliforniaOrder implements Order {
     public double getOrderAmount() {
       return orderAmount;
     }
-    public void accept(OrderVisitorDecremental v) {
+    public void accept(VisitorInterface v) {
       v.visit(this);
     }
 }

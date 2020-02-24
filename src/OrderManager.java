@@ -1,3 +1,5 @@
+package src;
+
 import javax.swing.JFrame;
 
 import java.awt.event.ItemEvent;
@@ -13,6 +15,7 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.RowFilter;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableRowSorter;
 
 public class OrderManager extends JFrame {
@@ -26,29 +29,36 @@ public class OrderManager extends JFrame {
     public static final String NON_CA_ORDER = "Non-California Order";
     public static final String OVERSEAS_ORDER = "Overseas Order";
     public static final String COLOMBIAN_ORDER = "Colombian Order";
+    public static final String VIEW_ROW = "View";
+    public static final String MODIFY_ROW = "Modify";
+    public static final String DELETE_ROW = "Delete";
+    private ButtonHandler buttonAction;
+    private JTableButtonHandler innerActions;
 
     /** Elementos de la interfaz */
-    JLabel lblTittle, lblOrderType, lblOrderAmount, lblSearchTooltip, lblAdditionalTax, lblAdditionalSH,
-            lblAdditionalFPT, lblTotalValue;
+    private JLabel lblTittle, lblOrderType, lblOrderAmount, lblSearchTooltip, lblAdditionalTax, lblAdditionalSH,
+            lblAdditionalFPT, lblResult, lblCode;
 
-    JComboBox<String> cmbOrderType;
+    private JComboBox<String> cmbOrderType;
 
-    JTextField txtOrderAmount, txtSearch, txtAdditionalTax, txtAdditionalSH, txtAdditionalFPT;
+    private JTextField txtOrderAmount, txtSearch, txtAdditionalTax, txtAdditionalSH, txtAdditionalFPT, txtCode;
 
-    JButton getTotalButton, createOrderButton, exitButton;
+    private JButton getTotalButton, createOrderButton, exitButton, deleteButton, modifyButton, viewButton;
 
     /** Elementos Visitor */
-    private OrderVisitorIncremental objVisitorIncremental;
-    private OrderVisitorDecremental objVisitorDecremental;
+    private VisitorInterface objVisitorIncremental;
+    private VisitorInterface objVisitorDecremental;
     private CollectionHandler objCollectionHandler;
 
     /** Elementos para el manejo visual de la tabla */
-    DefaultTableModel dtm;
-    JTable orderTable;
-    JScrollPane tableContainer;
+    private DefaultTableModel dtm;
+    private JTable orderTable;
+    private JScrollPane tableContainer;
 
     public OrderManager() {
-        setSize(1380, 280);
+        buttonAction = new ButtonHandler(this);
+        innerActions = new JTableButtonHandler(this);
+        setSize(1380, 320);
         setTitle("Reto multipatron");
         setLocationRelativeTo(null);
         setUndecorated(true);
@@ -56,7 +66,7 @@ public class OrderManager extends JFrame {
 
         /** Elementos de tipo Visitor */
         objCollectionHandler = new CollectionHandler();
-        objVisitorIncremental = new OrderVisitorDecremental(objCollectionHandler);
+        objVisitorIncremental = new OrderVisitorIncremental(objCollectionHandler);
         objVisitorDecremental = new OrderVisitorDecremental(objCollectionHandler);
         /** Construccion de la interfaz grafica */
 
@@ -71,17 +81,33 @@ public class OrderManager extends JFrame {
         cmbOrderType.addItem(OrderManager.OVERSEAS_ORDER);
         cmbOrderType.addItem(OrderManager.COLOMBIAN_ORDER);
 
+        lblCode = new JLabel("Code");
+        txtCode = new JTextField();
         lblOrderAmount = new JLabel("Order Amount");
         txtOrderAmount = new JTextField();
         lblSearchTooltip = new JLabel("Search Order");
         txtSearch = new JTextField();
 
+        viewButton = new JButton(OrderManager.VIEW_ROW);
+        viewButton.addMouseListener(innerActions);
+        modifyButton = new JButton(OrderManager.MODIFY_ROW);
+        modifyButton.addMouseListener(innerActions);
+        deleteButton = new JButton(OrderManager.DELETE_ROW);    
+        deleteButton.addMouseListener(innerActions);
+
         /** Item especial: tabla de ordenes */
-        Object[][] data = new Object[][] { { "0", "Colombian Order", "500", "0", "0", "35", "no" },
-                { "1", "Non-CaliforniaOrder", "430", "0", "0", "25", "no" } };
-        Object[] columns = new Object[] { "ID", "Type", "Amount", "Tax", "S&H", "FFT", "Delete?" };
-        dtm = new DefaultTableModel(data, columns);
+        Object[] columns = new Object[] { "ID", "Type", "Data", "modify", "Delete" };
+        dtm = new DefaultTableModel(null, columns){
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
         orderTable = new JTable(dtm);
+        orderTable.addMouseListener(new TableEvent(orderTable));
+        //orderTable.addMouseMotionListener(new TableEvent(orderTable));
+        TableCellRenderer defaultRender = orderTable.getDefaultRenderer(Object.class);
+        orderTable.setDefaultRenderer(Object.class, new RenderComponent(defaultRender));
         tableContainer = new JScrollPane(orderTable);
         /** Items variables */
         lblAdditionalTax = new JLabel("Additional Tax (CA Orders Only)");
@@ -90,7 +116,7 @@ public class OrderManager extends JFrame {
         txtAdditionalSH = new JTextField();
         lblAdditionalFPT = new JLabel("Additional FFT (Colombian Orders Only)");
         txtAdditionalFPT = new JTextField();
-        lblTotalValue = new JLabel();
+        lblResult = new JLabel();
         /** Botones */
         getTotalButton = new JButton(OrderManager.GET_TOTAL);
         createOrderButton = new JButton(OrderManager.CREATE_ORDER);
@@ -100,30 +126,33 @@ public class OrderManager extends JFrame {
         /** Posicionamiento de elementos */
         lblTittle.setBounds(12, 12, 100, 50);
 
-        lblOrderType.setBounds(20, 40, 250, 50);
-        cmbOrderType.setBounds(260, 55, 150, 20);
+        lblCode.setBounds(20, 60, 250, 50);
+        txtCode.setBounds(260, 75, 150, 20);
 
-        lblOrderAmount.setBounds(20, 70, 250, 50);
-        txtOrderAmount.setBounds(260, 82, 150, 25);
+        lblOrderType.setBounds(20, 30, 250, 50);
+        cmbOrderType.setBounds(260, 45, 150, 20);
 
-        lblAdditionalTax.setBounds(20, 100, 250, 50);
-        txtAdditionalTax.setBounds(260, 112, 150, 25);
+        lblOrderAmount.setBounds(20, 90, 250, 50);
+        txtOrderAmount.setBounds(260, 102, 150, 25);
 
-        lblAdditionalSH.setBounds(20, 100, 250, 50);
-        txtAdditionalSH.setBounds(260, 112, 150, 25);
+        lblAdditionalTax.setBounds(20, 120, 250, 50);
+        txtAdditionalTax.setBounds(260, 132, 150, 25);
 
-        lblAdditionalFPT.setBounds(20, 100, 250, 50);
-        txtAdditionalFPT.setBounds(260, 112, 150, 25);
+        lblAdditionalSH.setBounds(20, 120, 250, 50);
+        txtAdditionalSH.setBounds(260, 132, 150, 25);
 
-        getTotalButton.setBounds(20, 152, 100, 20);
-        createOrderButton.setBounds(126, 152, 120, 20);
-        exitButton.setBounds(252, 152, 100, 20);
+        lblAdditionalFPT.setBounds(20, 120, 250, 50);
+        txtAdditionalFPT.setBounds(260, 132, 150, 25);
 
-        lblSearchTooltip.setBounds(20, 222, 250, 50);
-        txtSearch.setBounds(160, 236, 250, 25);
+        getTotalButton.setBounds(20, 172, 100, 20);
+        createOrderButton.setBounds(126, 172, 120, 20);
+        exitButton.setBounds(252, 172, 100, 20);
 
-        tableContainer.setBounds(450, 20, 900, 250);
-        lblTotalValue.setBounds(150, 182, 250, 50);
+        lblSearchTooltip.setBounds(20, 260, 250, 50);
+        txtSearch.setBounds(160, 276, 250, 25);
+
+        tableContainer.setBounds(450, 20, 900, 290);
+        lblResult.setBounds(150, 202, 250, 50);
         /** Fin del posicionamiento de elementos */
 
         /** Configuracion de visibilidad */
@@ -149,6 +178,8 @@ public class OrderManager extends JFrame {
         add(lblTittle);
         add(lblOrderType);
         add(cmbOrderType);
+        add(lblCode);
+        add(txtCode);
         add(lblOrderAmount);
         add(txtOrderAmount);
         add(lblAdditionalTax);
@@ -163,29 +194,49 @@ public class OrderManager extends JFrame {
         add(lblSearchTooltip);
         add(txtSearch);
         add(tableContainer);
-        add(lblTotalValue);
+        add(lblResult);
         /** Fin del agregado de items */
 
     }
 
-    public void setTotalValue(String msg) {
-        lblTotalValue.setText(msg);
+    public void setResult(String msg) {
+        lblResult.setText(msg);
     }
 
-    public OrderVisitorDecremental getOrderVisitor() {
+    public void modify(){
+        txtCode.setText((String)dtm.getValueAt(orderTable.getSelectedRow(), 0));
+    }
+
+    public VisitorInterface getVisitorIncremental() {
         return objVisitorIncremental;
+    }
+
+    public VisitorInterface getVisitorDecremental() {
+        return objVisitorDecremental;
     }
 
     public CollectionHandler getCollectionHandler() {
         return objCollectionHandler;
     }
 
+    public JTable getTable(){
+        return orderTable;
+    }
+
     public String getOrderType() {
         return (String) cmbOrderType.getSelectedItem();
     }
 
+    public String getCode(){
+        String texto = (String) txtCode.getText();
+        txtCode.setText("");
+        return texto;
+    }
+
     public String getOrderAmount() {
-        return txtOrderAmount.getText();
+        String texto = (String) txtOrderAmount.getText();
+        txtOrderAmount.setText("");
+        return texto;
     }
 
     public String getTax() {
@@ -216,7 +267,7 @@ public class OrderManager extends JFrame {
             public void keyReleased(KeyEvent e) {
                 TableRowSorter<DefaultTableModel> tr = new TableRowSorter<>(dtm);
                 orderTable.setRowSorter(tr);
-                tr.setRowFilter(RowFilter.regexFilter(txtSearch.getText()));
+                tr.setRowFilter(RowFilter.regexFilter(txtSearch.getText(), 0));
             }
         });
 
@@ -232,30 +283,39 @@ public class OrderManager extends JFrame {
                         txtAdditionalTax.setVisible(true);
                         lblAdditionalSH.setVisible(false);
                         txtAdditionalSH.setVisible(false);
+                        txtAdditionalSH.setText("");
                         lblAdditionalFPT.setVisible(false);
                         txtAdditionalFPT.setVisible(false);
+                        txtAdditionalFPT.setText("");
                         break;
                     case OrderManager.NON_CA_ORDER:
                         lblAdditionalTax.setVisible(false);
                         txtAdditionalTax.setVisible(false);
+                        txtAdditionalTax.setText("");
                         lblAdditionalSH.setVisible(false);
                         txtAdditionalSH.setVisible(false);
+                        txtAdditionalSH.setText("");
                         lblAdditionalFPT.setVisible(false);
                         txtAdditionalFPT.setVisible(false);
+                        txtAdditionalFPT.setText("");
                         break;
                     case OrderManager.OVERSEAS_ORDER:
                         lblAdditionalTax.setVisible(false);
                         txtAdditionalTax.setVisible(false);
+                        txtAdditionalTax.setText("");
                         lblAdditionalSH.setVisible(true);
                         txtAdditionalSH.setVisible(true);
                         lblAdditionalFPT.setVisible(false);
                         txtAdditionalFPT.setVisible(false);
+                        txtAdditionalFPT.setText("");
                         break;
                     case OrderManager.COLOMBIAN_ORDER:
                         lblAdditionalTax.setVisible(false);
                         txtAdditionalTax.setVisible(false);
+                        txtAdditionalTax.setText("");
                         lblAdditionalSH.setVisible(false);
                         txtAdditionalSH.setVisible(false);
+                        txtAdditionalSH.setText("");
                         lblAdditionalFPT.setVisible(true);
                         txtAdditionalFPT.setVisible(true);
                         break;
@@ -265,15 +325,45 @@ public class OrderManager extends JFrame {
         });
     }
 
+    public boolean addRow(Object[] obj){
+        JButton btn1 = new JButton(OrderManager.VIEW_ROW);
+        JButton btn2 = new JButton(OrderManager.MODIFY_ROW);
+        JButton btn3 = new JButton(OrderManager.DELETE_ROW);
+        btn1.addMouseListener(innerActions);
+        btn2.addMouseListener(innerActions);
+        btn3.addMouseListener(innerActions);
+        Object[] row = {obj[0], obj[1], btn1, btn2, btn3};
+        dtm.addRow(row);
+        return true;
+    }
+
+    public boolean removeRow(){
+        Integer key = Integer.parseInt((String) dtm.getValueAt(orderTable.getSelectedRow(), 0));
+        objCollectionHandler.removeOrder(key).accept(objVisitorDecremental);;
+        dtm.removeRow(orderTable.getSelectedRow());
+        return true;
+    }
+
+    public boolean modifyRow(Object[] obj){
+        for(int i = 0 ; i < dtm.getRowCount() ; i++){
+            if(((String) obj[0]).equals((String) dtm.getValueAt(i, 0))){
+                dtm.setValueAt(obj[0], i, 0);
+                dtm.setValueAt(obj[1], i, 1);
+                return true;
+            }
+        }
+        return false;
+    }
+
     private void addButtonListeners() {
-        ButtonHandler buttonAction = new ButtonHandler();
+
+        getTotalButton.setActionCommand(OrderManager.GET_TOTAL);
+        createOrderButton.setActionCommand(OrderManager.CREATE_ORDER);
+        exitButton.setActionCommand(OrderManager.EXIT);
 
         getTotalButton.addActionListener(buttonAction);
         createOrderButton.addActionListener(buttonAction);
         exitButton.addActionListener(buttonAction);
 
-        getTotalButton.setActionCommand(OrderManager.GET_TOTAL);
-        createOrderButton.setActionCommand(OrderManager.CREATE_ORDER);
-        exitButton.setActionCommand(OrderManager.EXIT);
     }
 }

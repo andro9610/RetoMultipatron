@@ -1,3 +1,5 @@
+package src;
+
 public interface VisitorInterface {
 
     public void visit(NonCaliforniaOrder nco);

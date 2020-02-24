@@ -1,3 +1,5 @@
+package src;
+
 public class ColombianOrder implements Order{
     private double orderAmount;
     private double additionalFFT;
@@ -15,7 +17,7 @@ public class ColombianOrder implements Order{
     public double getAdditionalFFT(){
         return additionalFFT;
     }
-    public void accept(OrderVisitorDecremental v) {
+    public void accept(VisitorInterface v) {
         v.visit(this);
     }
 }
