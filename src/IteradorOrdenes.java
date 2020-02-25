@@ -13,7 +13,6 @@ public class IteradorOrdenes implements Iterator {
 
     public IteradorOrdenes(Map<Integer, Order> coleccion) {
         this.coleccion = coleccion;
-        System.out.println("Aqui entro-------------------------");
         keyArray =  coleccion.keySet().toArray();
     }
 

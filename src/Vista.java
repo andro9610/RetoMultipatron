@@ -18,8 +18,7 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableRowSorter;
 
-public class OrderManager extends JFrame {
-    private static final long serialVersionUID = 1L;
+public class Vista extends JFrame {
 
     /** Instrucciones de texto */
     public static final String GET_TOTAL = "Get Total";
@@ -40,21 +39,19 @@ public class OrderManager extends JFrame {
 
     private JComboBox<String> cmbOrderType;
 
-    private JTextField txtOrderAmount, txtSearch, txtAdditionalTax, txtAdditionalSH, txtAdditionalFPT, txtCode;
+    private JTextField txtOrderAmount, txtSearch, txtAdditional, txtCode;
 
     private JButton getTotalButton, createOrderButton, exitButton;
 
     /** Elementos Visitor */
-    private VisitorInterface objVisitorIncremental;
-    private VisitorInterface objVisitorDecremental;
-    private CollectionHandler objCollectionHandler;
 
     /** Elementos para el manejo visual de la tabla */
     private DefaultTableModel dtm;
     private JTable orderTable;
+    private TableRowSorter<DefaultTableModel> tr;
     private JScrollPane tableContainer;
 
-    public OrderManager() {
+    public Vista() {
         buttonAction = new ButtonHandler(this);
         setSize(1380, 320);
         setTitle("Reto multipatron");
@@ -62,10 +59,6 @@ public class OrderManager extends JFrame {
         setUndecorated(true);
         setLayout(null);
 
-        /** Elementos de tipo Visitor */
-        objCollectionHandler = new CollectionHandler();
-        objVisitorIncremental = new OrderVisitorIncremental(objCollectionHandler);
-        objVisitorDecremental = new OrderVisitorDecremental(objCollectionHandler);
         /** Construccion de la interfaz grafica */
 
         /** Items fijos */
@@ -74,10 +67,10 @@ public class OrderManager extends JFrame {
         lblOrderType = new JLabel("OrderType");
 
         cmbOrderType = new JComboBox<String>();
-        cmbOrderType.addItem(OrderManager.CA_ORDER);
-        cmbOrderType.addItem(OrderManager.NON_CA_ORDER);
-        cmbOrderType.addItem(OrderManager.OVERSEAS_ORDER);
-        cmbOrderType.addItem(OrderManager.COLOMBIAN_ORDER);
+        cmbOrderType.addItem(Vista.CA_ORDER);
+        cmbOrderType.addItem(Vista.NON_CA_ORDER);
+        cmbOrderType.addItem(Vista.OVERSEAS_ORDER);
+        cmbOrderType.addItem(Vista.COLOMBIAN_ORDER);
 
         lblCode = new JLabel("Code");
         txtCode = new JTextField();
@@ -95,23 +88,23 @@ public class OrderManager extends JFrame {
             }
         };
         orderTable = new JTable(dtm);
+        tr = new TableRowSorter<>(dtm);
+        orderTable.setRowSorter(tr);
         orderTable.addMouseListener(new TableEvent(orderTable));
         //orderTable.addMouseMotionListener(new TableEvent(orderTable));
         TableCellRenderer defaultRender = orderTable.getDefaultRenderer(Object.class);
         orderTable.setDefaultRenderer(Object.class, new RenderComponent(defaultRender));
         tableContainer = new JScrollPane(orderTable);
         /** Items variables */
+        txtAdditional = new JTextField();
         lblAdditionalTax = new JLabel("Additional Tax (CA Orders Only)");
-        txtAdditionalTax = new JTextField();
         lblAdditionalSH = new JLabel("Additional S&H (Overseas Orders Only)");
-        txtAdditionalSH = new JTextField();
         lblAdditionalFPT = new JLabel("Additional FFT (Colombian Orders Only)");
-        txtAdditionalFPT = new JTextField();
         lblResult = new JLabel();
         /** Botones */
-        getTotalButton = new JButton(OrderManager.GET_TOTAL);
-        createOrderButton = new JButton(OrderManager.CREATE_ORDER);
-        exitButton = new JButton(OrderManager.EXIT);
+        getTotalButton = new JButton(Vista.GET_TOTAL);
+        createOrderButton = new JButton(Vista.CREATE_ORDER);
+        exitButton = new JButton(Vista.EXIT);
         /** Fin de la construccion de la interfaz grafica */
 
         /** Posicionamiento de elementos */
@@ -127,13 +120,11 @@ public class OrderManager extends JFrame {
         txtOrderAmount.setBounds(260, 102, 150, 25);
 
         lblAdditionalTax.setBounds(20, 120, 250, 50);
-        txtAdditionalTax.setBounds(260, 132, 150, 25);
+        txtAdditional.setBounds(260, 132, 150, 25);
 
         lblAdditionalSH.setBounds(20, 120, 250, 50);
-        txtAdditionalSH.setBounds(260, 132, 150, 25);
 
         lblAdditionalFPT.setBounds(20, 120, 250, 50);
-        txtAdditionalFPT.setBounds(260, 132, 150, 25);
 
         getTotalButton.setBounds(20, 172, 100, 20);
         createOrderButton.setBounds(126, 172, 120, 20);
@@ -148,17 +139,15 @@ public class OrderManager extends JFrame {
 
         /** Configuracion de visibilidad */
         lblAdditionalTax.setVisible(false);
-        txtAdditionalTax.setVisible(false);
+        txtAdditional.setVisible(false);
 
         lblAdditionalSH.setVisible(false);
-        txtAdditionalSH.setVisible(false);
 
         lblAdditionalFPT.setVisible(false);
-        txtAdditionalFPT.setVisible(false);
         /** Fin de configuracion de visibilidad */
 
         /** Configuracion de comportamiento */
-        cmbOrderType.setSelectedItem(OrderManager.NON_CA_ORDER);
+        cmbOrderType.setSelectedItem(Vista.NON_CA_ORDER);
         addFilterSearch();
         addElementSwitch();
         addButtonListeners();
@@ -174,11 +163,9 @@ public class OrderManager extends JFrame {
         add(lblOrderAmount);
         add(txtOrderAmount);
         add(lblAdditionalTax);
-        add(txtAdditionalTax);
+        add(txtAdditional);
         add(lblAdditionalSH);
-        add(txtAdditionalSH);
         add(lblAdditionalFPT);
-        add(txtAdditionalFPT);
         add(getTotalButton);
         add(createOrderButton);
         add(exitButton);
@@ -192,22 +179,6 @@ public class OrderManager extends JFrame {
 
     public void setResult(String msg) {
         lblResult.setText(msg);
-    }
-
-    public void modify(){
-        txtCode.setText((String)dtm.getValueAt(orderTable.getSelectedRow(), 0));
-    }
-
-    public VisitorInterface getVisitorIncremental() {
-        return objVisitorIncremental;
-    }
-
-    public VisitorInterface getVisitorDecremental() {
-        return objVisitorDecremental;
-    }
-
-    public CollectionHandler getCollectionHandler() {
-        return objCollectionHandler;
     }
 
     public JTable getTable(){
@@ -230,16 +201,14 @@ public class OrderManager extends JFrame {
         return texto;
     }
 
-    public String getTax() {
-        return txtAdditionalTax.getText();
+    public String getAditional() {
+        String texto = (String) txtAdditional.getText();
+        txtAdditional.setText("");
+        return texto;
     }
 
-    public String getSH() {
-        return txtAdditionalSH.getText();
-    }
-
-    public String getFPT() {
-        return txtAdditionalFPT.getText();
+    public String getOrderValue(){
+        return (String) dtm.getValueAt(orderTable.convertRowIndexToModel(orderTable.getSelectedRow()), 0);
     }
 
     /** Metodo para manejar las busquedas en vivo */
@@ -256,8 +225,6 @@ public class OrderManager extends JFrame {
 
             @Override
             public void keyReleased(KeyEvent e) {
-                TableRowSorter<DefaultTableModel> tr = new TableRowSorter<>(dtm);
-                orderTable.setRowSorter(tr);
                 tr.setRowFilter(RowFilter.regexFilter(txtSearch.getText(), 0));
             }
         });
@@ -269,46 +236,29 @@ public class OrderManager extends JFrame {
             @Override
             public void itemStateChanged(ItemEvent e) {
                 switch ((String) cmbOrderType.getSelectedItem()) {
-                    case OrderManager.CA_ORDER:
+                    case Vista.CA_ORDER:
+                        txtAdditional.setVisible(true);
                         lblAdditionalTax.setVisible(true);
-                        txtAdditionalTax.setVisible(true);
                         lblAdditionalSH.setVisible(false);
-                        txtAdditionalSH.setVisible(false);
-                        txtAdditionalSH.setText("");
                         lblAdditionalFPT.setVisible(false);
-                        txtAdditionalFPT.setVisible(false);
-                        txtAdditionalFPT.setText("");
                         break;
-                    case OrderManager.NON_CA_ORDER:
+                    case Vista.NON_CA_ORDER:
+                        txtAdditional.setVisible(false);
                         lblAdditionalTax.setVisible(false);
-                        txtAdditionalTax.setVisible(false);
-                        txtAdditionalTax.setText("");
                         lblAdditionalSH.setVisible(false);
-                        txtAdditionalSH.setVisible(false);
-                        txtAdditionalSH.setText("");
                         lblAdditionalFPT.setVisible(false);
-                        txtAdditionalFPT.setVisible(false);
-                        txtAdditionalFPT.setText("");
                         break;
-                    case OrderManager.OVERSEAS_ORDER:
+                    case Vista.OVERSEAS_ORDER:
+                        txtAdditional.setVisible(true);
                         lblAdditionalTax.setVisible(false);
-                        txtAdditionalTax.setVisible(false);
-                        txtAdditionalTax.setText("");
                         lblAdditionalSH.setVisible(true);
-                        txtAdditionalSH.setVisible(true);
                         lblAdditionalFPT.setVisible(false);
-                        txtAdditionalFPT.setVisible(false);
-                        txtAdditionalFPT.setText("");
                         break;
-                    case OrderManager.COLOMBIAN_ORDER:
+                    case Vista.COLOMBIAN_ORDER:
+                        txtAdditional.setVisible(true);
                         lblAdditionalTax.setVisible(false);
-                        txtAdditionalTax.setVisible(false);
-                        txtAdditionalTax.setText("");
                         lblAdditionalSH.setVisible(false);
-                        txtAdditionalSH.setVisible(false);
-                        txtAdditionalSH.setText("");
                         lblAdditionalFPT.setVisible(true);
-                        txtAdditionalFPT.setVisible(true);
                         break;
                 }
             }
@@ -317,9 +267,9 @@ public class OrderManager extends JFrame {
     }
 
     public boolean addRow(Object[] obj){
-        JButton btn1 = new JButton(OrderManager.VIEW_ROW);
-        JButton btn2 = new JButton(OrderManager.MODIFY_ROW);
-        JButton btn3 = new JButton(OrderManager.DELETE_ROW);
+        JButton btn1 = new JButton(Vista.VIEW_ROW);
+        JButton btn2 = new JButton(Vista.MODIFY_ROW);
+        JButton btn3 = new JButton(Vista.DELETE_ROW);
         btn1.addMouseListener(buttonAction);
         btn2.addMouseListener(buttonAction);
         btn3.addMouseListener(buttonAction);
@@ -329,10 +279,12 @@ public class OrderManager extends JFrame {
     }
 
     public boolean removeRow(){
-        Integer key = Integer.parseInt((String) dtm.getValueAt(orderTable.getSelectedRow(), 0));
-        objCollectionHandler.removeOrder(key).accept(objVisitorDecremental);;
-        dtm.removeRow(orderTable.getSelectedRow());
+        dtm.removeRow(orderTable.convertRowIndexToModel(orderTable.getSelectedRow()));
         return true;
+    }
+
+    public void modify(){
+        txtCode.setText(getOrderValue());
     }
 
     public boolean modifyRow(Object[] obj){
@@ -348,9 +300,9 @@ public class OrderManager extends JFrame {
 
     private void addButtonListeners() {
 
-        getTotalButton.setActionCommand(OrderManager.GET_TOTAL);
-        createOrderButton.setActionCommand(OrderManager.CREATE_ORDER);
-        exitButton.setActionCommand(OrderManager.EXIT);
+        getTotalButton.setActionCommand(Vista.GET_TOTAL);
+        createOrderButton.setActionCommand(Vista.CREATE_ORDER);
+        exitButton.setActionCommand(Vista.EXIT);
 
         getTotalButton.addActionListener(buttonAction);
         createOrderButton.addActionListener(buttonAction);

@@ -5,15 +5,18 @@ import javax.swing.AbstractButton;
 
 class ButtonHandler implements ActionListener, MouseListener {
 
-  private OrderManager objOrderManager;
+  private Vista objOrderManager;
   private OrdersFactory factoriaOrdenes;
+  private VisitorInterface objVisitorIncremental;
+  private VisitorInterface objVisitorDecremental;
+  private CollectionHandler objCollectionHandler;
 
   public void actionPerformed(ActionEvent e) {
     String totalResult = null;
-    if (e.getActionCommand().equals(OrderManager.EXIT)) {
+    if (e.getActionCommand().equals(Vista.EXIT)) {
       System.exit(1);
     }
-    else if (e.getActionCommand().equals(OrderManager.CREATE_ORDER)
+    else if (e.getActionCommand().equals(Vista.CREATE_ORDER)
         ) {
       //get input values
       String strCode = objOrderManager.getCode();
@@ -21,15 +24,11 @@ class ButtonHandler implements ActionListener, MouseListener {
       Object[] obj = {strCode, orderType};
       String strOrderAmount =
         objOrderManager.getOrderAmount();
-      String strTax = objOrderManager.getTax();
-      String strSH = objOrderManager.getSH();
-      String strFFT = objOrderManager.getFPT();
+      String strAditional = objOrderManager.getAditional();
 
       int code = 0;
       double dblOrderAmount = 0.0;
-      double dblTax = 0.0;
-      double dblSH = 0.0;
-      double dblFFT = 0.0;
+      double dblAditional = 0.0;
 
       if(strCode.trim().length()==0){
         objOrderManager.setResult("El código no puede estár vacio");
@@ -38,47 +37,33 @@ class ButtonHandler implements ActionListener, MouseListener {
       if (strOrderAmount.trim().length() == 0) {
         strOrderAmount = "0.0";
       }
-      if (strTax.trim().length() == 0) {
-        strTax = "0.0";
-      }
-      if (strSH.trim().length() == 0) {
-        strSH = "0.0";
-      }
-      if(strFFT.trim().length() == 0){
-        strFFT = "0.0";
+      if (strAditional.trim().length() == 0) {
+        strAditional = "0.0";
       }
 
       code = Integer.parseInt(strCode);
       dblOrderAmount = Double.parseDouble(strOrderAmount);
-      dblTax = Double.parseDouble(strTax);
-      dblSH = Double.parseDouble(strSH);
-      dblFFT = Double.parseDouble(strFFT);
+      dblAditional = Double.parseDouble(strAditional);
 
       //Create the order
-      Order order = factoriaOrdenes.createOrder(orderType, dblOrderAmount,
-                    dblTax, dblSH,dblFFT);
-
-      VisitorInterface visitor;
+      Order order = factoriaOrdenes.createOrder(orderType, dblOrderAmount, dblAditional);
 
       if(comprobarExistenciaOrden(code)){
-        visitor = objOrderManager.getVisitorDecremental();
-        objOrderManager.getCollectionHandler().getOrder(code).accept(visitor);
-        objOrderManager.getCollectionHandler().addOrder(code, order);
-        visitor = objOrderManager.getVisitorIncremental();
-        order.accept(visitor);
+        objCollectionHandler.getOrder(code).accept(objVisitorDecremental);
+        objCollectionHandler.addOrder(code, order);
+        order.accept(objVisitorIncremental);
         objOrderManager.modifyRow(obj);
         objOrderManager.setResult("modified order");
       }
       else{
-        visitor = objOrderManager.getVisitorIncremental();
-        objOrderManager.getCollectionHandler().addOrder(code, order);
-        order.accept(visitor);
+        objCollectionHandler.addOrder(code, order);
+        order.accept(objVisitorIncremental);
         objOrderManager.addRow(obj);
         objOrderManager.setResult("Order Created Successfully");
       }
     }
-    else if (e.getActionCommand().equals(OrderManager.GET_TOTAL)) {
-      totalResult = ((Double) objOrderManager.getCollectionHandler().getOrderTotal()).toString();
+    else if (e.getActionCommand().equals(Vista.GET_TOTAL)) {
+      totalResult = ((Double) objCollectionHandler.getOrderTotal()).toString();
       totalResult = " Orders Total = " + totalResult;
       objOrderManager.setResult(totalResult);
     }
@@ -86,7 +71,7 @@ class ButtonHandler implements ActionListener, MouseListener {
 
   private boolean comprobarExistenciaOrden(int code){
 
-    IteradorOrdenes iterador = objOrderManager.getCollectionHandler().getIteradorOrdenes();
+    IteradorOrdenes iterador = objCollectionHandler.getIteradorOrdenes();
 
     while(iterador.hasNext()){
       if(iterador.next()==code){
@@ -97,53 +82,45 @@ class ButtonHandler implements ActionListener, MouseListener {
     return false;
   }
 
-  public ButtonHandler() {}
-
-  public ButtonHandler(OrderManager inObjOrderManager) {
-    objOrderManager = inObjOrderManager;
-    factoriaOrdenes = new OrdersFactory();
-  }
-
-  @Override
-  public void mouseClicked(MouseEvent e) {
-    // TODO Auto-generated method stub
-
-  }
-
   @Override
   public void mousePressed(MouseEvent e) {
-    // TODO Auto-generated method stub
     switch (( (AbstractButton) e.getSource()).getActionCommand()) {
-      case OrderManager.VIEW_ROW:
-          System.out.println("View in button");
+      case Vista.VIEW_ROW:
+          System.out.println("Not supported yet.");
           break;
-      case OrderManager.MODIFY_ROW:
+      case Vista.MODIFY_ROW:
           objOrderManager.modify();
           break;
-      case OrderManager.DELETE_ROW:
+      case Vista.DELETE_ROW:
+          Integer key = Integer.parseInt(objOrderManager.getOrderValue());
+          objCollectionHandler.removeOrder(key).accept(objVisitorDecremental);
           objOrderManager.removeRow();
           break;
       default:
           break;
-  }
-  }
-
-  @Override
-  public void mouseReleased(MouseEvent e) {
-    // TODO Auto-generated method stub
-
+    }
   }
 
   @Override
-  public void mouseEntered(MouseEvent e) {
-    // TODO Auto-generated method stub
-
-  }
+  public void mouseReleased(MouseEvent e) {}
 
   @Override
-  public void mouseExited(MouseEvent e) {
-    // TODO Auto-generated method stub
+  public void mouseEntered(MouseEvent e) {}
 
+  @Override
+  public void mouseExited(MouseEvent e) {}
+
+  @Override
+  public void mouseClicked(MouseEvent e) {}
+
+  public ButtonHandler() {}
+
+  public ButtonHandler(Vista inObjOrderManager) {
+    objCollectionHandler = new CollectionHandler();
+    objVisitorIncremental = new OrderVisitorIncremental(objCollectionHandler);
+    objVisitorDecremental = new OrderVisitorDecremental(objCollectionHandler);
+    objOrderManager = inObjOrderManager;
+    factoriaOrdenes = new OrdersFactory();
   }
 
 }

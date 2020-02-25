@@ -5,21 +5,21 @@ public class OrdersFactory{
     public OrdersFactory(){}
 
     public Order createOrder(String orderType,
-        double orderAmount, double tax, double SH, double FFT){
-        if (orderType.equalsIgnoreCase(OrderManager.CA_ORDER)) {
-            return new CaliforniaOrder(orderAmount, tax);
+        double orderAmount, double aditional){
+        if (orderType.equalsIgnoreCase(Vista.CA_ORDER)) {
+            return new CaliforniaOrder(orderAmount, aditional);
         }
         else if (orderType.equalsIgnoreCase(
-            OrderManager.NON_CA_ORDER)) {
+            Vista.NON_CA_ORDER)) {
             return new NonCaliforniaOrder(orderAmount);
         }
         else if (orderType.equalsIgnoreCase(
-            OrderManager.OVERSEAS_ORDER)) {
-            return new OverseasOrder(orderAmount, SH);
+            Vista.OVERSEAS_ORDER)) {
+            return new OverseasOrder(orderAmount, aditional);
         }
         else if (orderType.equalsIgnoreCase(
-            OrderManager.COLOMBIAN_ORDER)){
-            return new ColombianOrder(orderAmount,FFT);
+            Vista.COLOMBIAN_ORDER)){
+            return new ColombianOrder(orderAmount,aditional);
         }
         return null;
     }
